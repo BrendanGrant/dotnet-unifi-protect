@@ -115,6 +115,8 @@ public class Protect : IProtect
         }
     }
 
+    private Uri GetCameraUrl(string cameraId) => new Uri(CamerasUrl, cameraId);
+
     private Uri WebsocketSystemUrl
     {
         get
@@ -172,6 +174,47 @@ public class Protect : IProtect
             RestartLoginRefresh();
             await this.Bootstrap();
             this.automaticRefresh = autoRefresh;
+        }
+
+        return true;
+    }
+
+    public IReadOnlyList<Camera> GetCameraInfos()
+    {
+        if (this.loggedIn && this.bootstrap != null)
+        {
+           return this.bootstrap.Cameras;
+        }
+
+        return null;
+    }
+
+    public async Task<bool> SetMicrophone(string cameraId, int volume)
+    {
+        var body = new { micVolume = volume };
+        var json = JsonConvert.SerializeObject(body);
+
+        return await PatchCamera(cameraId, json);
+    }
+
+    public async Task<bool> SetRecordingMode(string cameraId, RecordingMode mode)
+    {
+        var body = new { recordingSettings = new { mode = mode.ToString().ToLower() } };
+        var json = JsonConvert.SerializeObject(body);
+
+        return await PatchCamera(cameraId, json);
+    }
+
+    private async Task<bool> PatchCamera(string cameraId, string json)
+    {
+        using var requestMessage = AddHeaders(new HttpRequestMessage(HttpMethod.Patch, GetCameraUrl(cameraId)));
+        requestMessage.Content = new StringContent(json, null, "application/json");
+        using var response = await this.httpClient.SendAsync(requestMessage);
+
+        if (!response.IsSuccessStatusCode)
+        {
+            //TODO: Added logging?
+            return false;
         }
 
         return true;

@@ -22,7 +22,12 @@ public class RecordingSettings
         this.MinMotionEventTrigger = minMotionEventTrigger;
         this.EndMotionEventDelay = endMotionEventDelay;
         this.SuppressIlluminationSurge = suppressIlluminationSurge;
-        this.Mode = mode;
+        RecordingMode parsedMode = RecordingMode.Unknown;
+        if (Enum.TryParse<RecordingMode>(mode, out parsedMode))
+        {
+            this.Mode = parsedMode;
+        }
+
         this.Geofencing = geofencing;
         this.MotionAlgorithm = motionAlgorithm;
         this.EnablePirTimelapse = enablePirTimelapse;
@@ -39,7 +44,7 @@ public class RecordingSettings
 
     public bool SuppressIlluminationSurge { get; }
 
-    public string Mode { get; }
+    public RecordingMode Mode { get; }
 
     public string Geofencing { get; }
 
